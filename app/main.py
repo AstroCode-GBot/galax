@@ -4,12 +4,15 @@ from fastapi.staticfiles import StaticFiles
 from app.admin.routes import admin_router
 from app.admin.promotions import promo_router
 from app.admin.downloads import download_ledger_router
-from app.database.session import engine, Base, AsyncSessionLocal
-from app.database.models import AdminUser, ApiRoute
+
+# সংশোধন: 'Base' ইমপোর্ট করা হয়েছে models থেকে এবং বাকিগুলো session থেকে
+from app.database.session import engine, AsyncSessionLocal
+from app.database.models import Base, AdminUser, ApiRoute
+
 from app.admin.auth import hash_password
 from sqlalchemy import select
 
-# Import your bot worker system components
+# আপনার বট ওয়ার্কার সিস্টেম কম্পোনেন্ট
 from app.bot_worker import main as run_bot_worker 
 
 app = FastAPI(title="All Saver Pro Control Matrix", version="2.4.0")
@@ -21,11 +24,11 @@ app.include_router(download_ledger_router)
 
 @app.on_event("startup")
 async def absolute_auto_initialization():
-    # 1. Automatically generate all missing database tables
+    # ১. ডেটাবেস টেবিল অটো-জেনারেট করা
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         
-    # 2. Automatically seed administrative credentials and ALL 6 fallback routes
+    # ২. অ্যাডমিন ক্রেডেনশিয়াল এবং সব রুট সিড করা
     async with AsyncSessionLocal() as session:
         admin_check = await session.execute(select(AdminUser))
         if not admin_check.first():
@@ -44,13 +47,12 @@ async def absolute_auto_initialization():
                 ApiRoute(name="Serverless Gateway", platform="facebook", endpoint="https://serverless-tooly-gateway-6n4h522y.ue.gateway.dev/facebook/video?url=", priority=1),
                 ApiRoute(name="PinsSaver Global", platform="pinterest", endpoint="https://api.pinssaver.com/pin?url=", priority=1),
                 ApiRoute(name="Spotyloader Core", platform="spotify", endpoint="https://spotyloader.com/api/spotify/info?url=", priority=1),
-                # Terabox base URL stored inside the DB layout routing dictionary
                 ApiRoute(name="Teradown Production", platform="terabox", endpoint="https://teradown-dzv3.onrender.com/api?url=", priority=1)
             ]
             session.add_all(default_apis)
             await session.commit()
 
-    # 3. Inject the Telegram Bot directly into the Free Web Service's event loop
+    # ৩. ফ্রি সার্ভারেই একই সাথে টেলিগ্রাম বট ব্যাকগ্রাউন্ডে রান করানো
     asyncio.create_task(run_bot_worker())
 
 @app.get("/health")
