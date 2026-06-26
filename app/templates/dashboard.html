@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-8">
+    <h2 class="text-3xl font-extrabold tracking-tight">System Core Dashboard</h2>
+    <p class="text-gray-400">Real-time status overview of the All Saver Pro infrastructure.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="glass p-6 rounded-2xl shadow-xl">
+        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Total Active Users</h3>
+        <p class="text-4xl font-bold mt-2 text-blue-400" id="metric-users">--</p>
+    </div>
+    <div class="glass p-6 rounded-2xl shadow-xl">
+        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Total Media Dispatches</h3>
+        <p class="text-4xl font-bold mt-2 text-emerald-400" id="metric-downloads">--</p>
+    </div>
+    <div class="glass p-6 rounded-2xl shadow-xl">
+        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Node Status</h3>
+        <p class="text-4xl font-bold mt-2 text-indigo-400">ONLINE</p>
+    </div>
+    <div class="glass p-6 rounded-2xl shadow-xl">
+        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Cache Layer Engine</h3>
+        <p class="text-4xl font-bold mt-2 text-purple-400">ACTIVE</p>
+    </div>
+</div>
+
+<div class="glass p-8 rounded-2xl">
+    <h3 class="text-lg font-bold mb-4">Live Telemetry Pipeline Engine</h3>
+    <div class="h-64 flex items-center justify-center text-gray-500 border border-dashed border-white/10 rounded-xl">
+        [Chart Integration Context Space: Live Data Stream Connected]
+    </div>
+</div>
+
+<script>
+    async function loadMetrics() {
+        try {
+            const res = await fetch('/api/v1/metrics');
+            const data = await res.json();
+            document.getElementById('metric-users').innerText = data.total_users;
+            document.getElementById('metric-downloads').innerText = data.total_downloads;
+        } catch (e) {
+            console.error("Metrics pulling pipeline issue encountered.", e);
+        }
+    }
+    setInterval(loadMetrics, 5000);
+    loadMetrics();
+</script>
+{% endblock %}
