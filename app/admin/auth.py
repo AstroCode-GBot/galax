@@ -1,22 +1,32 @@
 import datetime
 from typing import Optional
-from passlib.context import CryptContext
+import bcrypt  # সরাসরি নেটিভ এবং ফাস্ট মডার্ন লাইব্রেরি
 import jwt
 from fastapi import Request, HTTPException, status
 from app.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # স্ট্রিংকে বাইটে কনভার্ট করে সল্ট দিয়ে হ্যাশ করা
+    password_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'), 
+            hashed_password.encode('utf-8')
+        )
+    except Exception:
+        return False
 
 def create_admin_token(username: str) -> str:
+    current_time = datetime.datetime.now(datetime.timezone.utc)
     payload = {
         "sub": username,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+        "exp": current_time + datetime.timedelta(hours=8),
+        "iat": current_time
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
@@ -30,8 +40,14 @@ def verify_admin_token(token: str) -> Optional[str]:
 async def get_current_admin(request: Request) -> str:
     token = request.cookies.get("admin_session")
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Access Denied: No active administrative session."
+        )
     username = verify_admin_token(token)
     if not username:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Session Token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Access Denied: Invalid or expired security token."
+        )
     return username
