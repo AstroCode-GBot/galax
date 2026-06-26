@@ -2,11 +2,11 @@ import time
 from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import Message
+from redis.asyncio import Redis
 
 class RateLimitMiddleware(BaseMiddleware):
-    def __init__(self, limit_seconds: int = 3):
-        # Using a standard dictionary to store user activity in RAM
-        self.storage = {}
+    def __init__(self, redis_client: Redis, limit_seconds: int = 3):
+        self.redis = redis_client
         self.limit = limit_seconds
         super().__init__()
 
@@ -20,14 +20,11 @@ class RateLimitMiddleware(BaseMiddleware):
             return await handler(event, data)
             
         user_id = event.from_user.id
-        current_time = time.time()
+        key = f"ratelimit:{user_id}"
         
-        # Check if user has an existing cooling period active
-        if user_id in self.storage:
-            last_request_time = self.storage[user_id]
-            if current_time - last_request_time < self.limit:
-                return await event.answer("⚠️ *System Guard*: Please do not spam links. Rate limit active (3s).", parse_mode="Markdown")
-                
-        # Update user's timestamp matrix
-        self.storage[user_id] = current_time
+        is_exists = await self.redis.exists(key)
+        if is_exists:
+            return await event.answer("⚠️ *System Guard*: Please do not spam links. Rate limit active (3s).", parse_mode="Markdown")
+            
+        await self.redis.setex(key, self.limit, "active")
         return await handler(event, data)
