@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h2 class="text-3xl font-extrabold">User Identity Registry</h2>
+        <p class="text-gray-400">Manage real-time connected user accounts and ban profiles.</p>
+    </div>
+</div>
+
+<div class="glass overflow-hidden rounded-2xl border border-white/5 shadow-xl">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="bg-white/5 text-gray-300 text-xs uppercase tracking-wider font-semibold">
+                <th class="p-4">Telegram ID</th>
+                <th class="p-4">Account Profile Namespace</th>
+                <th class="p-4">Join Date Sequence</th>
+                <th class="p-4">Downloads Log Count</th>
+                <th class="p-4">Access Status Authorization</th>
+                <th class="p-4 text-right">Actions Matrix</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5 text-sm">
+            {% for user in users %}
+            <tr class="hover:bg-white/5 transition">
+                <td class="p-4 font-mono text-gray-400">{{ user.id }}</td>
+                <td class="p-4 font-medium">{{ user.first_name }} {% if user.username %}(@{{ user.username }}){% endif %}</td>
+                <td class="p-4 text-gray-400">{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="p-4 text-blue-400 font-bold">{{ user.download_count }}</td>
+                <td class="p-4">
+                    {% if user.is_banned %}
+                    <span class="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 text-xs rounded-full font-medium">BANNED</span>
+                    {% else %}
+                    <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs rounded-full font-medium">ACTIVE RUNNING</span>
+                    {% endif %}
+                </td>
+                <td class="p-4 text-right">
+                    <form action="/admin/users/{{ user.id }}/ban" method="POST" class="inline">
+                        <button type="submit" class="px-3 py-1 text-xs rounded-lg {% if user.is_banned %}bg-emerald-600 hover:bg-emerald-500{% else %}bg-red-600 hover:bg-red-500{% endif %} font-bold transition">
+                            {% if user.is_banned %}Unban User{% else %}Ban User{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
