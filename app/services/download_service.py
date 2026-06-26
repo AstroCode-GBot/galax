@@ -13,9 +13,9 @@ class DownloadScraperEngine:
             "spotify": r"open\.spotify\.com",
             "terabox": r"(terabox\.com|neofiles\.com|4shared\.com|mirrobox\.com)"
         }
-        for engine, regex in patterns.items():
+        for engine_name, regex in patterns.items():
             if re.search(regex, url):
-                return engine
+                return engine_name
         return None
 
     @classmethod
@@ -27,11 +27,7 @@ class DownloadScraperEngine:
                         if resp.status == 200:
                             res = await resp.json()
                             d = res.get("data", {})
-                            return {
-                                "direct_url": d.get("play"),
-                                "title": d.get("title", "TikTok Video"),
-                                "thumb": d.get("cover")
-                            }
+                            return {"direct_url": d.get("play"), "title": d.get("title", "TikTok Video"), "thumb": d.get("cover")}
                             
                 elif platform == "instagram":
                     async with session.get(f"https://igram.site/api/instagram?url={url}") as resp:
@@ -63,6 +59,7 @@ class DownloadScraperEngine:
                             return {"direct_url": post.get("preview_url"), "title": f"{post.get('name')} - {post.get('artist')}", "thumb": post.get("image")}
                             
                 elif platform == "terabox":
+                    # Correctly structured to append your explicit token parameter natively
                     api_url = f"https://teradown-dzv3.onrender.com/api?url={url}&ndus=Y2t6_i7teHuiX-uHDssg3XhTPleotTOyL1Jf5tPV"
                     async with session.get(api_url) as resp:
                         if resp.status == 200:
