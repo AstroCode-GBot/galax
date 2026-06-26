@@ -2,8 +2,6 @@ fastapi==0.111.0
 uvicorn==0.30.1
 aiogram==3.7.0
 sqlalchemy==2.0.31
-pymysql==1.1.1
-aiomysql==0.2.0
 cryptography==42.0.8
 h11==0.14.0
 aiohttp==3.9.5
@@ -14,3 +12,4 @@ passlib[bcrypt]==1.7.4
 gunicorn==22.0.0
 pydantic==2.7.4
 pydantic-settings==2.3.3
+asyncpg==0.29.0
