@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: allsaver-core-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - fromGroup: allsaver-secrets
+
+  - type: worker
+    name: allsaver-bot-worker
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app.bot_worker
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - fromGroup: allsaver-secrets
