@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-8">
+    <h2 class="text-3xl font-extrabold">Dynamic API Router Engine Configuration</h2>
+    <p class="text-gray-400">Inject fallback targets, adjust engine routes priority, and handle scraper endpoints.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="glass p-6 rounded-2xl h-fit border border-white/5">
+        <h3 class="text-lg font-bold mb-4 text-indigo-400">Register Target Node</h3>
+        <form action="/admin/apis/create" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Endpoint Alias Name</label>
+                <input type="text" name="name" required class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 text-white text-sm">
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Platform Identity Target Type</label>
+                <select name="platform" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 text-white text-sm">
+                    <option value="tiktok">TikTok Scraper Core</option>
+                    <option value="instagram">Instagram Graph API</option>
+                    <option value="facebook">Facebook Edge Services</option>
+                    <option value="pinterest">Pinterest Downloader Node</option>
+                    <option value="spotify">Spotify Engine</option>
+                    <option value="terabox">Terabox Storage Array Engine</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Fully Qualified Target Endpoint URL Address</label>
+                <input type="url" name="endpoint" required class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 text-white text-sm">
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Priority Execution Weight Matrix Index</label>
+                <input type="number" name="priority" value="1" required class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 text-white text-sm">
+            </div>
+            <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold transition text-sm">
+                Deploy Route into Registry
+            </button>
+        </form>
+    </div>
+
+    <div class="lg:col-span-2 glass p-6 rounded-2xl border border-white/5">
+        <h3 class="text-lg font-bold mb-4">Active Platform Routers</h3>
+        <div class="space-y-3">
+            {% for api in apis %}
+            <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center hover:bg-white/10 transition">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm">{{ api.name }}</span>
+                        <span class="px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 rounded text-[10px] uppercase font-bold text-indigo-400">{{ api.platform }}</span>
+                    </div>
+                    <p class="text-xs text-gray-400 font-mono mt-1 break-all">{{ api.endpoint }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs font-semibold block text-gray-400">Priority Weight: {{ api.priority }}</span>
+                    <span class="text-[11px] text-emerald-400 font-medium">● ACTIVE</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
