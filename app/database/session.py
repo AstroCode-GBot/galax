@@ -1,15 +1,12 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 from app.config import settings
 
-# Adjust driver variant for clean async execution mapping
-db_url = settings.DATABASE_URL.replace("mysql+pymysql://", "mysql+aiomysql://")
-
+# Neon PostgreSQL-এর জন্য অ্যাসিনক্রোনাস ইঞ্জিন কনফিগারেশন
 engine = create_async_engine(
-    db_url,
-    pool_size=20,
-    max_overflow=10,
-    pool_recycle=3600,
-    echo=False
+    settings.DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -20,4 +17,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 async def get_db():
     async with AsyncSessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
